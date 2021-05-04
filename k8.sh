@@ -6,36 +6,39 @@ then
 fi
 
 case ${1} in
-  h)
+  hlp)
     echo -e "summary of commands"
     echo -e "-------------------"
-    echo -e "context <param>                - use the kube-config-{param}.yaml file"
-    echo -e "info                           - list useful info"
+    echo -e "hlp                            - help (this list)"
+    echo -e "ctx <param>                    - use the kube-config-{param}.yaml file"
+    echo -e "inf                            - list useful info"
     echo -e "kgn                            - get nodes"
     echo -e "kdn <param>                    - describe node"
-    echo -e "kj                             - join node info"
-    echo -e "ka <file>                      - apply file"
-    echo -e "kga <param>                    - get all (namespace override)"
-    echo -e "kg <param> <param>             - get resource"
-    echo -e "kd <param> <param>             - describe resource"
-    echo -e "klg <param> <param>            - logs for resource"
-    echo -e "krm <param> <param>            - delete resource"
+    echo -e "kjn                            - join node info"
+    echo -e "kap <file>                     - apply file"
+    echo -e "kga                            - get all (current porject namespace)"
+    echo -e "kga <namespace>                - get all (namespace override)"
+    echo -e "kgy <resource> <param>         - get resource with yaml"
+    echo -e "kgr <resource> <param>         - get resource"
+    echo -e "kdr <resource> <param>         - describe resource"
+    echo -e "klg <resource> <param>         - logs for resource"
+    echo -e "krm <resource> <param>         - delete resource"
     echo -e "kru <param> <image> <command>  - run image with command"
     echo -e "kex <param> <command>          - execute pod with command"
-    echo -e "tl  <param>                    - tekton list object"
-    echo -e "td  <object> <param>           - tekton describe object"
+    echo -e "tlo <param>                    - tekton list object"
+    echo -e "tdo <object> <param>           - tekton describe object"
     echo -e "tlg <object> <param>           - tekton show logs for object"
     echo -e "trm <object> <param>           - tekton delete object"
     echo -e "export PROJECT=namespace       - set current namespace (used in commands)"
     exit 0
   ;;
-  context)
+  ctx)
     cp kube-config-${2}.yaml .kube/config
     echo -e "changed to server ${2}"
     kubectl cluster-info
     exit 0
   ;;
-  info)
+  inf)
     echo -e "version - 1.1.0 03/2021"
     echo -e "context $(cat .kube/config | grep name | head -n 1)"
     echo -e "project - $PROJECT"
@@ -49,24 +52,30 @@ case ${1} in
     kubectl describe node ${2}
     exit 0
   ;;
-  kj)
+  kjn)
     kubeadm token create --print-join-command
     exit 0
   ;;
-  ka)
+  kap)
     if [ "$#" -ne 2 ];
     then
-      echo -e "usage -> k8 ka <file>"
+      echo -e "usage -> k8 kap <file>"
       exit 0
     fi
     kubectl apply -f ${2} -n $PROJECT
     exit 0
   ;;
   kga)
+    if [ "$#" -gt 1 ];
+    then
       kubectl get all -n ${2}
       exit 0
+    else
+      kubectl get all -n $PROJECT
+      exit 0
+    fi
   ;;
-  kg)
+  kgr)
     if [ "$PROJECT" = "" ];
     then
       kubectl get ${2} ${3}
@@ -75,11 +84,11 @@ case ${1} in
     kubectl get ${2} ${3} -n $PROJECT
   exit 0
   ;;
-  ks)
+  kgy)
     kubectl get ${2} ${3} -n $PROJECT -o yaml
     exit 0
   ;;
-  kd)
+  kdr)
     kubectl describe ${2} ${3}  -n $PROJECT
     exit 0
   ;;
@@ -105,11 +114,11 @@ case ${1} in
     exit 0
   ;;
 
-  tl)
+  tlo)
     tkn ${2} list -n $PROJECT
     e:xit 0
   ;;
-  td)
+  tdo)
     tkn ${2} describe ${3} -n $PROJECT
     exit 0
   ;;
